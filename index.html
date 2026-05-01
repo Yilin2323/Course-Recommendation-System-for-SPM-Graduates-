@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KME Course Recommendation System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-100 text-slate-800">
+  <header class="topbar">
+    <a class="brand" href="index.html">KME Recommender</a>
+    <nav>
+      <a href="input.html">Student Input</a>
+      <a href="personality.html">Personality Test</a>
+      <a href="result.html">Result</a>
+      <a href="admin.html">Admin</a>
+    </nav>
+  </header>
+
+  <main class="hero">
+    <section class="hero-copy">
+      <p class="eyebrow">Knowledge-Based System Prototype</p>
+      <h1>Course recommendations for SPM graduates</h1>
+      <p>
+        Enter your SPM grades, complete a simple RIASEC personality test, and
+        receive rule-based course suggestions with clear explanations.
+      </p>
+      <div class="actions">
+        <a class="button primary" href="input.html">Start Recommendation</a>
+        <a class="button secondary" href="admin.html">View Knowledge Base</a>
+      </div>
+    </section>
+
+    <section class="hero-panel" aria-label="System overview">
+      <div>
+        <span>1</span>
+        <strong>Knowledge Acquisition</strong>
+        <p>Collect student grades and personality answers.</p>
+      </div>
+      <div>
+        <span>2</span>
+        <strong>Inference Engine</strong>
+        <p>Compare the profile with course rules.</p>
+      </div>
+      <div>
+        <span>3</span>
+        <strong>Recommendation</strong>
+        <p>Rank suitable courses with score and reason.</p>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

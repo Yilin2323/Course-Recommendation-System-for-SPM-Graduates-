@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Knowledge Base | KME Recommender</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-100 text-slate-800">
+  <header class="topbar">
+    <a class="brand" href="index.html">KME Recommender</a>
+    <nav>
+      <a href="input.html">Student Input</a>
+      <a href="personality.html">Personality Test</a>
+      <a href="result.html">Result</a>
+      <a class="active" href="admin.html">Admin</a>
+    </nav>
+  </header>
+
+  <main class="page">
+    <section class="page-heading">
+      <p class="eyebrow">Admin Side</p>
+      <h1>Knowledge Base Dashboard</h1>
+      <p>Static prototype view for course data, entry requirements, and RIASEC mapping rules.</p>
+    </section>
+
+    <section class="admin-stats">
+      <div><strong id="courseCount">0</strong><span>Courses</span></div>
+      <div><strong>10</strong><span>SPM Subjects</span></div>
+      <div><strong>6</strong><span>RIASEC Types</span></div>
+    </section>
+
+    <section class="form-section">
+      <h2>Manage Courses and Requirements</h2>
+      <div id="adminCourseTable" class="table-wrap"></div>
+    </section>
+
+    <section class="form-section">
+      <h2>RIASEC Mapping Rules</h2>
+      <div class="rule-grid">
+        <div><strong>Realistic</strong><p>Engineering, practical technology, hands-on work.</p></div>
+        <div><strong>Investigative</strong><p>Computing, science, analysis, problem-solving.</p></div>
+        <div><strong>Artistic</strong><p>Design, multimedia, creative communication.</p></div>
+        <div><strong>Social</strong><p>Education, helping, teaching, communication.</p></div>
+        <div><strong>Enterprising</strong><p>Business, management, leadership, entrepreneurship.</p></div>
+        <div><strong>Conventional</strong><p>Accounting, records, data, organized office work.</p></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Input | KME Recommender</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-100 text-slate-800">
+  <header class="topbar">
+    <a class="brand" href="index.html">KME Recommender</a>
+    <nav>
+      <a class="active" href="input.html">Student Input</a>
+      <a href="personality.html">Personality Test</a>
+      <a href="result.html">Result</a>
+      <a href="admin.html">Admin</a>
+    </nav>
+  </header>
+
+  <main class="page">
+    <section class="page-heading">
+      <p class="eyebrow">Step 1</p>
+      <h1>Student Profile and SPM Results</h1>
+      <p>Fill in your basic details and select your SPM grades.</p>
+    </section>
+
+    <form id="studentForm" class="form-shell">
+      <section class="form-section">
+        <h2>Basic Details</h2>
+        <div class="grid two">
+          <label>
+            Name
+            <input id="studentName" name="name" type="text" placeholder="Enter your name" required>
+          </label>
+          <label>
+            Email
+            <input id="studentEmail" name="email" type="email" placeholder="name@example.com" required>
+          </label>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <h2>SPM Grades</h2>
+        <div id="spmGradeGrid" class="spm-grade-grid"></div>
+      </section>
+
+      <div class="form-actions">
+        <a class="button secondary" href="index.html">Back</a>
+        <button class="button primary" type="submit">Save and Continue</button>
+      </div>
+    </form>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

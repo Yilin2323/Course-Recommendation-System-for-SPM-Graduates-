@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recommendation Result | KME Recommender</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-100 text-slate-800">
+  <header class="topbar">
+    <a class="brand" href="index.html">KME Recommender</a>
+    <nav>
+      <a href="input.html">Student Input</a>
+      <a href="personality.html">Personality Test</a>
+      <a class="active" href="result.html">Result</a>
+      <a href="admin.html">Admin</a>
+    </nav>
+  </header>
+
+  <main class="page">
+    <section class="page-heading">
+      <p class="eyebrow">Step 3</p>
+      <h1>Recommendation Result</h1>
+      <p id="resultIntro">Your course recommendations will appear here.</p>
+    </section>
+
+    <section id="profileSummary" class="summary"></section>
+    <section id="recommendationList" class="course-list"></section>
+
+    <div class="form-actions">
+      <a class="button secondary" href="personality.html">Edit Test</a>
+      <a class="button primary" href="input.html">Start Again</a>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

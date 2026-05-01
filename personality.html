@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Personality Test | KME Recommender</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-100 text-slate-800">
+  <header class="topbar">
+    <a class="brand" href="index.html">KME Recommender</a>
+    <nav>
+      <a href="input.html">Student Input</a>
+      <a class="active" href="personality.html">Personality Test</a>
+      <a href="result.html">Result</a>
+      <a href="admin.html">Admin</a>
+    </nav>
+  </header>
+
+  <main class="page">
+    <section class="page-heading">
+      <p class="eyebrow">Step 2</p>
+      <h1>RIASEC Personality Test</h1>
+      <p>Rate 10 short statements from 1 to 5. The system will calculate your top three personality types.</p>
+    </section>
+
+    <form id="personalityForm" class="form-shell">
+      <div id="questionList" class="question-list"></div>
+      <div class="form-actions">
+        <a class="button secondary" href="input.html">Back</a>
+        <button class="button primary" type="submit">See Recommendation</button>
+      </div>
+    </form>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
