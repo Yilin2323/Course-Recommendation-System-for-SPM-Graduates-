@@ -166,6 +166,152 @@ function escapeHTML(value) {
   }[character]));
 }
 
+function showMessage(element, message) {
+  if (!element) return;
+  element.textContent = message;
+  element.classList.add("show");
+}
+
+function clearMessage(element) {
+  if (!element) return;
+  element.textContent = "";
+  element.classList.remove("show");
+}
+
+const AUTH_USERS_KEY = "kmeUsers";
+const AUTH_SESSION_KEY = "kmeSession";
+
+function loadUsers() {
+  return loadData(AUTH_USERS_KEY, []);
+}
+
+function saveUsers(users) {
+  saveData(AUTH_USERS_KEY, users);
+}
+
+function getSession() {
+  return loadData(AUTH_SESSION_KEY, null);
+}
+
+function setSession(session) {
+  saveData(AUTH_SESSION_KEY, session);
+}
+
+function clearSession() {
+  localStorage.removeItem(AUTH_SESSION_KEY);
+}
+
+function getPageFile() {
+  const parts = window.location.pathname.split("/");
+  return (parts.pop() || "index.html").toLowerCase();
+}
+
+function renderNavAuth() {
+  const el = document.querySelector("#navAuth");
+  if (!el) return;
+
+  const session = getSession();
+  const file = getPageFile();
+
+  if (session && session.name && session.email) {
+    el.innerHTML = `
+      <span class="user-greeting" title="${escapeHTML(session.email)}">${escapeHTML(session.name)}</span>
+      <button type="button" class="nav-auth-out button ghost">Log out</button>
+    `;
+    el.querySelector(".nav-auth-out")?.addEventListener("click", () => {
+      clearSession();
+      window.location.href = "index.html";
+    });
+    return;
+  }
+
+  if (file === "login.html") {
+    el.innerHTML = `<a class="nav-auth-link" href="register.html">Create account</a>`;
+    return;
+  }
+
+  if (file === "register.html") {
+    el.innerHTML = `<a class="nav-auth-link" href="login.html">Log in</a>`;
+    return;
+  }
+
+  el.innerHTML = `
+    <a class="nav-auth-link" href="login.html">Log in</a>
+    <a class="button secondary" href="register.html">Sign up</a>
+  `;
+}
+
+function handleLoginForm() {
+  const form = document.querySelector("#loginForm");
+  const message = document.querySelector("#loginMessage");
+  if (!form) return;
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    clearMessage(message);
+    const formData = new FormData(form);
+    const email = String(formData.get("email") || "").trim().toLowerCase();
+    const password = String(formData.get("password") || "");
+
+    if (!email || !password) {
+      showMessage(message, "Please enter your email and password.");
+      return;
+    }
+
+    const users = loadUsers();
+    const user = users.find((entry) => entry.email === email);
+    if (!user || user.password !== password) {
+      showMessage(message, "That email or password does not match our records.");
+      return;
+    }
+
+    setSession({ email, name: user.name });
+    window.location.href = "index.html";
+  });
+}
+
+function handleRegisterForm() {
+  const form = document.querySelector("#registerForm");
+  const message = document.querySelector("#registerMessage");
+  if (!form) return;
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    clearMessage(message);
+    const formData = new FormData(form);
+    const name = String(formData.get("name") || "").trim();
+    const email = String(formData.get("email") || "").trim().toLowerCase();
+    const password = String(formData.get("password") || "");
+    const confirmPassword = String(formData.get("confirmPassword") || "");
+
+    if (!name || !email) {
+      showMessage(message, "Please enter your name and email.");
+      return;
+    }
+
+    if (password.length < 6) {
+      showMessage(message, "Password must be at least 6 characters.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      showMessage(message, "Passwords do not match.");
+      return;
+    }
+
+    const users = loadUsers();
+    if (users.some((entry) => entry.email === email)) {
+      showMessage(message, "An account with this email already exists. Try logging in.");
+      return;
+    }
+
+    users.push({ name, email, password });
+    saveUsers(users);
+    setSession({ email, name });
+    window.location.href = "input.html";
+  });
+}
+
 function meetsGrade(actual, minimum) {
   return gradePoints[actual] >= gradePoints[minimum];
 }
@@ -256,7 +402,7 @@ function renderGradeInputs() {
   function renderRows() {
     const savedElectives = getSavedElectives();
     gradeGrid.innerHTML = `
-      <h3>Mata Pelajaran Universal</h3>
+      <h3>Core subjects everyone enters</h3>
       ${universalSubjectRows.map((row) => `
         <div class="spm-row universal-row">
           <span>${escapeHTML(row.label)}</span>
@@ -266,7 +412,7 @@ function renderGradeInputs() {
         </div>
       `).join("")}
 
-      <h3>Mata Pelajaran Pakej Terbaik</h3>
+      <h3>Best package subjects</h3>
       ${[0, 1].map((index) => `
         <div class="spm-row paired-row">
           <select class="subject-input" data-elective-index="${index}" aria-label="Pakej terbaik subject ${index + 1}">
@@ -278,7 +424,7 @@ function renderGradeInputs() {
         </div>
       `).join("")}
 
-      <h3>Mata Pelajaran Terbaik (Selain Mata Pelajaran Di Atas)</h3>
+      <h3>Other strongest subjects</h3>
       ${[2, 3].map((index) => `
         <div class="spm-row paired-row">
           <select class="subject-input" data-elective-index="${index}" aria-label="Subjek terbaik lain ${index - 1}">
@@ -294,8 +440,15 @@ function renderGradeInputs() {
 
   const nameInput = document.querySelector("#studentName");
   const emailInput = document.querySelector("#studentEmail");
-  if (nameInput) nameInput.value = student.name || "";
-  if (emailInput) emailInput.value = student.email || "";
+  const account = getSession();
+  if (nameInput) {
+    nameInput.value = student.name || "";
+    if (!nameInput.value && account?.name) nameInput.value = account.name;
+  }
+  if (emailInput) {
+    emailInput.value = student.email || "";
+    if (!emailInput.value && account?.email) emailInput.value = account.email;
+  }
 
   function getSelectedGrades() {
     const selectedGrades = {};
@@ -350,24 +503,26 @@ function renderGradeInputs() {
 function handleStudentForm() {
   const form = document.querySelector("#studentForm");
   if (!form) return;
+  const message = document.querySelector("#studentMessage");
 
   form.addEventListener("submit", (event) => {
     event.preventDefault();
+    clearMessage(message);
     const formData = new FormData(form);
     const grades = form.getSelectedGrades ? form.getSelectedGrades() : {};
 
     if (form.hasDuplicateElectives?.()) {
-      alert("Please choose each elective subject once only.");
+      showMessage(message, "Please choose each elective subject once only.");
       return;
     }
 
     if (form.hasIncompleteElectives?.()) {
-      alert("Please complete both subject and grade for each elective row.");
+      showMessage(message, "Please complete both subject and grade for each elective row.");
       return;
     }
 
     if (Object.keys(grades).length === 0) {
-      alert("Please add at least one SPM subject before continuing.");
+      showMessage(message, "Please add at least one SPM subject before continuing.");
       return;
     }
 
@@ -390,8 +545,8 @@ function renderQuestions() {
     const name = `question-${index}`;
     return `
       <article class="question-card">
-        <p>${index + 1}. ${question.text}</p>
-        <div class="scale" role="radiogroup" aria-label="${question.text}">
+        <p><span class="question-number">${index + 1}</span>${escapeHTML(question.text)}</p>
+        <div class="scale" role="radiogroup" aria-label="${escapeHTML(question.text)}">
           ${[1, 2, 3, 4, 5].map((value) => `
             <label>
               <input type="radio" name="${name}" value="${value}" ${Number(saved[name]) === value ? "checked" : ""} required>
@@ -442,7 +597,12 @@ function renderResults() {
   const personality = loadData("kmePersonalityResult", null);
 
   if (!student || !personality) {
-    summary.innerHTML = `<div class="empty-state">Please complete the student input page and personality test first.</div>`;
+    summary.innerHTML = `
+      <div class="empty-state">
+        <strong>No profile found yet.</strong>
+        <p>Please complete the student input page and personality test first.</p>
+      </div>
+    `;
     list.innerHTML = "";
     return;
   }
@@ -450,63 +610,39 @@ function renderResults() {
   const recommendations = calculateRecommendations(student, personality.topTypes);
   intro.textContent = `Here are the ranked recommendations for ${student.name}.`;
   summary.innerHTML = `
-    <strong>${student.name}</strong>
-    <p>${student.email}</p>
+    <span class="mini-chip">Student snapshot</span>
+    <strong>${escapeHTML(student.name)}</strong>
+    <p>${escapeHTML(student.email)}</p>
+    <p>${Object.keys(student.grades || {}).length} SPM subjects included in this match.</p>
     <div class="pills">
-      ${personality.topTypes.map((type) => `<span class="pill">${type}</span>`).join("")}
+      ${personality.topTypes.map((type) => `<span class="pill">${escapeHTML(type)}</span>`).join("")}
     </div>
   `;
 
-  list.innerHTML = recommendations.map((course) => `
-    <article class="course-card">
+  list.innerHTML = recommendations.map((course, index) => `
+    <article class="course-card ${index === 0 ? "top-match" : ""}">
       <div class="course-top">
         <div>
-          <h2>${course.name}</h2>
-          <span class="pill">${course.field}</span>
+          <h2>${escapeHTML(course.name)}</h2>
+          <span class="pill">${escapeHTML(course.field)}</span>
         </div>
         <div class="score">
           <strong>${course.score}%</strong>
-          <span class="level ${course.level.className}">${course.level.text}</span>
+          <span class="level ${course.level.className}">${escapeHTML(course.level.text)}</span>
         </div>
       </div>
-      <p>${course.reason}</p>
+      <div class="reason-list">
+        ${course.reason.split(". ").filter(Boolean).map((reason) => `<span>${escapeHTML(reason.replace(/\.$/, ""))}</span>`).join("")}
+      </div>
     </article>
   `).join("");
 }
 
-function renderAdmin() {
-  const count = document.querySelector("#courseCount");
-  const table = document.querySelector("#adminCourseTable");
-  if (!table) return;
-
-  if (count) count.textContent = courses.length;
-  table.innerHTML = `
-    <table>
-      <thead>
-        <tr>
-          <th>Course</th>
-          <th>Field</th>
-          <th>Requirements</th>
-          <th>RIASEC Types</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${courses.map((course) => `
-          <tr>
-            <td><strong>${course.name}</strong></td>
-            <td>${course.field}</td>
-            <td>${Object.entries(course.requiredSubjects).map(([subject, grade]) => `${subject}: ${grade}`).join("<br>")}</td>
-            <td>${course.personalityTypes.join(", ")}</td>
-          </tr>
-        `).join("")}
-      </tbody>
-    </table>
-  `;
-}
-
+renderNavAuth();
+handleLoginForm();
+handleRegisterForm();
 renderGradeInputs();
 handleStudentForm();
 renderQuestions();
 handlePersonalityForm();
 renderResults();
-renderAdmin();

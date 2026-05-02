@@ -9,44 +9,66 @@
 </head>
 <body class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-100 text-slate-800">
   <header class="topbar">
-    <a class="brand" href="index.html">KME Recommender</a>
-    <nav>
-      <a href="input.html">Student Input</a>
-      <a href="personality.html">Personality Test</a>
-      <a href="result.html">Result</a>
-      <a href="admin.html">Admin</a>
-    </nav>
+    <a class="brand" href="index.html"><span>KME Recommender<small>Find your next course</small></span></a>
+    <div class="topbar-actions">
+      <nav aria-label="Main">
+        <a data-step="1" href="input.html">Profile</a>
+        <a data-step="2" href="personality.html">Personality</a>
+        <a data-step="3" href="result.html">Results</a>
+      </nav>
+      <div class="nav-auth" id="navAuth" aria-label="Account"></div>
+    </div>
   </header>
 
   <main class="hero">
     <section class="hero-copy">
-      <p class="eyebrow">Knowledge-Based System Prototype</p>
-      <h1>Course recommendations for SPM graduates</h1>
+      <p class="eyebrow">SPM to course pathway</p>
+      <h1>Turn your grades and personality into course ideas.</h1>
       <p>
-        Enter your SPM grades, complete a simple RIASEC personality test, and
-        receive rule-based course suggestions with clear explanations.
+        Build a simple student profile, answer a quick RIASEC check-in, and get
+        ranked course recommendations with reasons you can actually understand.
       </p>
+      <div class="hero-kicker" aria-label="System highlights">
+        <span class="mini-chip">10 courses</span>
+        <span class="mini-chip">SPM grade rules</span>
+        <span class="mini-chip">RIASEC matching</span>
+      </div>
       <div class="actions">
-        <a class="button primary" href="input.html">Start Recommendation</a>
-        <a class="button secondary" href="admin.html">View Knowledge Base</a>
+        <a class="button primary" href="input.html">Start My Match</a>
+        <a class="button secondary" href="result.html">My results</a>
       </div>
     </section>
 
     <section class="hero-panel" aria-label="System overview">
       <div>
         <span>1</span>
-        <strong>Knowledge Acquisition</strong>
-        <p>Collect student grades and personality answers.</p>
+        <strong>Add your SPM profile</strong>
+        <p>Choose core subjects, electives, and grades in a cleaner guided form.</p>
       </div>
       <div>
         <span>2</span>
-        <strong>Inference Engine</strong>
-        <p>Compare the profile with course rules.</p>
+        <strong>Discover your style</strong>
+        <p>Rate short statements to reveal your strongest RIASEC directions.</p>
       </div>
       <div>
         <span>3</span>
-        <strong>Recommendation</strong>
-        <p>Rank suitable courses with score and reason.</p>
+        <strong>Compare course matches</strong>
+        <p>Review ranked options, match scores, fields, and rule explanations.</p>
+      </div>
+    </section>
+
+    <section class="preview-card" aria-label="Recommendation preview">
+      <div>
+        <strong>Academic fit</strong>
+        <p>Checks whether your grades meet each course requirement.</p>
+      </div>
+      <div>
+        <strong>Personality fit</strong>
+        <p>Matches your top traits to course fields and learning style.</p>
+      </div>
+      <div>
+        <strong>Clear next step</strong>
+        <p>Shows why each course is ranked so you can compare confidently.</p>
       </div>
     </section>
   </main>

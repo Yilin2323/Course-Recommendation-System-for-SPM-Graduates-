@@ -9,27 +9,36 @@
 </head>
 <body class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-100 text-slate-800">
   <header class="topbar">
-    <a class="brand" href="index.html">KME Recommender</a>
-    <nav>
-      <a href="input.html">Student Input</a>
-      <a href="personality.html">Personality Test</a>
-      <a class="active" href="result.html">Result</a>
-      <a href="admin.html">Admin</a>
-    </nav>
+    <a class="brand" href="index.html"><span>KME Recommender<small>Find your next course</small></span></a>
+    <div class="topbar-actions">
+      <nav aria-label="Main">
+        <a data-step="1" href="input.html">Profile</a>
+        <a data-step="2" href="personality.html">Personality</a>
+        <a class="active" data-step="3" href="result.html">Results</a>
+      </nav>
+      <div class="nav-auth" id="navAuth" aria-label="Account"></div>
+    </div>
   </header>
 
   <main class="page">
     <section class="page-heading">
-      <p class="eyebrow">Step 3</p>
-      <h1>Recommendation Result</h1>
-      <p id="resultIntro">Your course recommendations will appear here.</p>
+      <p class="eyebrow">Step 3 of 3</p>
+      <h1>Your course match board.</h1>
+      <p id="resultIntro">Complete your profile and personality check to unlock ranked recommendations.</p>
+      <div class="stepper" aria-label="Recommendation progress">
+        <span>1 Profile</span>
+        <span>2 Personality</span>
+        <span class="active">3 Results</span>
+      </div>
     </section>
 
-    <section id="profileSummary" class="summary"></section>
-    <section id="recommendationList" class="course-list"></section>
+    <section class="result-layout" aria-label="Recommendation result">
+      <aside id="profileSummary" class="summary"></aside>
+      <section id="recommendationList" class="course-list"></section>
+    </section>
 
     <div class="form-actions">
-      <a class="button secondary" href="personality.html">Edit Test</a>
+      <a class="button ghost" href="personality.html">Edit Personality</a>
       <a class="button primary" href="input.html">Start Again</a>
     </div>
   </main>

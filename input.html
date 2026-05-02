@@ -9,25 +9,50 @@
 </head>
 <body class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-100 text-slate-800">
   <header class="topbar">
-    <a class="brand" href="index.html">KME Recommender</a>
-    <nav>
-      <a class="active" href="input.html">Student Input</a>
-      <a href="personality.html">Personality Test</a>
-      <a href="result.html">Result</a>
-      <a href="admin.html">Admin</a>
-    </nav>
+    <a class="brand" href="index.html"><span>KME Recommender<small>Find your next course</small></span></a>
+    <div class="topbar-actions">
+      <nav aria-label="Main">
+        <a class="active" data-step="1" href="input.html">Profile</a>
+        <a data-step="2" href="personality.html">Personality</a>
+        <a data-step="3" href="result.html">Results</a>
+      </nav>
+      <div class="nav-auth" id="navAuth" aria-label="Account"></div>
+    </div>
   </header>
 
   <main class="page">
     <section class="page-heading">
-      <p class="eyebrow">Step 1</p>
-      <h1>Student Profile and SPM Results</h1>
-      <p>Fill in your basic details and select your SPM grades.</p>
+      <p class="eyebrow">Step 1 of 3</p>
+      <h1>Build your student profile.</h1>
+      <p>Add your contact details and strongest SPM subjects so the system can compare you with course entry rules.</p>
+      <div class="stepper" aria-label="Recommendation progress">
+        <span class="active">1 Profile</span>
+        <span>2 Personality</span>
+        <span>3 Results</span>
+      </div>
     </section>
 
     <form id="studentForm" class="form-shell">
+      <div id="studentMessage" class="form-message" role="alert"></div>
+      <section class="info-strip" aria-label="Profile tips">
+        <div>
+          <strong>Start with core subjects</strong>
+          <p>Bahasa Melayu, English, Mathematics, and History are always shown.</p>
+        </div>
+        <div>
+          <strong>Pick your best electives</strong>
+          <p>Select up to four additional subjects that best represent your strengths.</p>
+        </div>
+      </section>
+
       <section class="form-section">
-        <h2>Basic Details</h2>
+        <div class="form-section-header">
+          <div>
+            <h2>Basic Details</h2>
+            <p class="section-note">These details personalize your result page.</p>
+          </div>
+          <span class="mini-chip">Required</span>
+        </div>
         <div class="grid two">
           <label>
             Name
@@ -41,12 +66,18 @@
       </section>
 
       <section class="form-section">
-        <h2>SPM Grades</h2>
+        <div class="form-section-header">
+          <div>
+            <h2>SPM Grades</h2>
+            <p class="section-note">Choose the grade shown on your SPM result for each selected subject.</p>
+          </div>
+          <span class="mini-chip">Academic fit</span>
+        </div>
         <div id="spmGradeGrid" class="spm-grade-grid"></div>
       </section>
 
       <div class="form-actions">
-        <a class="button secondary" href="index.html">Back</a>
+        <a class="button ghost" href="index.html">Back Home</a>
         <button class="button primary" type="submit">Save and Continue</button>
       </div>
     </form>

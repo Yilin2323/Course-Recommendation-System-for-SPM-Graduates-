@@ -9,26 +9,47 @@
 </head>
 <body class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-100 text-slate-800">
   <header class="topbar">
-    <a class="brand" href="index.html">KME Recommender</a>
-    <nav>
-      <a href="input.html">Student Input</a>
-      <a class="active" href="personality.html">Personality Test</a>
-      <a href="result.html">Result</a>
-      <a href="admin.html">Admin</a>
-    </nav>
+    <a class="brand" href="index.html"><span>KME Recommender<small>Find your next course</small></span></a>
+    <div class="topbar-actions">
+      <nav aria-label="Main">
+        <a data-step="1" href="input.html">Profile</a>
+        <a class="active" data-step="2" href="personality.html">Personality</a>
+        <a data-step="3" href="result.html">Results</a>
+      </nav>
+      <div class="nav-auth" id="navAuth" aria-label="Account"></div>
+    </div>
   </header>
 
   <main class="page">
     <section class="page-heading">
-      <p class="eyebrow">Step 2</p>
-      <h1>RIASEC Personality Test</h1>
-      <p>Rate 10 short statements from 1 to 5. The system will calculate your top three personality types.</p>
+      <p class="eyebrow">Step 2 of 3</p>
+      <h1>Find your learning and career vibe.</h1>
+      <p>Rate each statement honestly. Your top three RIASEC types will help shape the recommendation ranking.</p>
+      <div class="stepper" aria-label="Recommendation progress">
+        <span>1 Profile</span>
+        <span class="active">2 Personality</span>
+        <span>3 Results</span>
+      </div>
     </section>
 
     <form id="personalityForm" class="form-shell">
+      <section class="scale-guide" aria-label="Rating guide">
+        <div>
+          <strong>1 means not me</strong>
+          <p>Choose low scores for activities you rarely enjoy.</p>
+        </div>
+        <div>
+          <strong>3 means maybe</strong>
+          <p>Use the middle when the statement depends on the situation.</p>
+        </div>
+        <div>
+          <strong>5 means very me</strong>
+          <p>Choose high scores for activities that sound exciting or natural.</p>
+        </div>
+      </section>
       <div id="questionList" class="question-list"></div>
       <div class="form-actions">
-        <a class="button secondary" href="input.html">Back</a>
+        <a class="button ghost" href="input.html">Back to Profile</a>
         <button class="button primary" type="submit">See Recommendation</button>
       </div>
     </form>
