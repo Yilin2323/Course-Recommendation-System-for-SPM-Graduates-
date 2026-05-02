@@ -25,32 +25,81 @@ const gradePoints = {
   "G": 1
 };
 
-const subjects = [
-  "Bahasa Melayu",
-  "English",
-  "Mathematics",
-  "Science",
-  "Additional Mathematics",
-  "Physics",
-  "Chemistry",
-  "Biology",
-  "History",
-  "Accounting / Economy / ICT"
+/** Mata pelajaran teras (wajib) — keys align with course rule lookups where applicable */
+const compulsorySubjects = [
+  { label: "Bahasa Melayu", key: "Bahasa Melayu" },
+  { label: "Bahasa Inggeris (dijajarkan dengan CEFR)", key: "English" },
+  { label: "Sejarah", key: "History" },
+  { label: "Matematik", key: "Mathematics" },
+  { label: "Sains (wajib bagi aliran Sastera, Perdagangan & Kesenian)", key: "Science" }
 ];
 
-const universalSubjectRows = [
-  { label: "BAHASA MELAYU", subject: "Bahasa Melayu" },
-  { label: "BAHASA INGGERIS", subject: "English" },
-  { label: "MATEMATIK", subject: "Mathematics" },
-  { label: "SEJARAH", subject: "History" }
+const CORE_KEYS = new Set([
+  ...compulsorySubjects.map((row) => row.key),
+  "Pendidikan Islam",
+  "Pendidikan Moral"
+]);
+
+/** Mata pelajaran elektif — `value` is stored in grades; aliases map to course requirements */
+const electiveGroups = [
+  {
+    title: "Aliran Sains Tulen",
+    options: [
+      { label: "Fizik", value: "Physics" },
+      { label: "Kimia", value: "Chemistry" },
+      { label: "Biologi", value: "Biology" },
+      { label: "Matematik Tambahan", value: "Additional Mathematics" }
+    ]
+  },
+  {
+    title: "Aliran Sastera & Kemanusiaan",
+    options: [
+      { label: "Ekonomi", value: "Ekonomi" },
+      { label: "Perniagaan", value: "Perniagaan" },
+      { label: "Prinsip Perakaunan", value: "Prinsip Perakaunan" },
+      { label: "Geografi", value: "Geografi" },
+      { label: "Kesusasteraan Inggeris", value: "Kesusasteraan Inggeris" },
+      { label: "Kesusasteraan Cina / Tamil", value: "Kesusasteraan Cina/Tamil" }
+    ]
+  },
+  {
+    title: "Aliran Teknikal & Vokasional",
+    options: [
+      { label: "Lukisan Kejuruteraan", value: "Lukisan Kejuruteraan" },
+      { label: "Grafik Komunikasi Teknikal", value: "Grafik Komunikasi Teknikal" },
+      { label: "Sains Tambahan", value: "Sains Tambahan" }
+    ]
+  },
+  {
+    title: "Bahasa Tambahan",
+    options: [
+      { label: "Bahasa Arab", value: "Bahasa Arab" },
+      { label: "Bahasa Cina", value: "Bahasa Cina" },
+      { label: "Bahasa Tamil", value: "Bahasa Tamil" },
+      { label: "Bahasa Iban", value: "Bahasa Iban" },
+      { label: "Bahasa Kadazandusun", value: "Bahasa Kadazandusun" },
+      { label: "Bahasa Punjabi", value: "Bahasa Punjabi" }
+    ]
+  }
 ];
 
-const electiveSubjectOptions = [
-  { label: "SILA PILIH SUBJEK", value: "" },
-  ...subjects
-    .filter((subject) => !universalSubjectRows.some((row) => row.subject === subject))
-    .map((subject) => ({ label: subject.toUpperCase(), value: subject }))
-];
+/** Course requirement key → student grade keys that can satisfy it (first match wins) */
+const COURSE_GRADE_ALIASES = {
+  "Accounting / Economy / ICT": ["Prinsip Perakaunan", "Ekonomi", "Perniagaan"]
+};
+
+function resolveStudentGrade(grades, requirementKey) {
+  const direct = grades[requirementKey];
+  if (direct && direct !== "TIADA") return direct;
+  const aliases = COURSE_GRADE_ALIASES[requirementKey];
+  if (aliases) {
+    for (const alt of aliases) {
+      const g = grades[alt];
+      if (g && g !== "TIADA") return g;
+    }
+  }
+  return undefined;
+}
 
 const riasecLabels = {
   R: "Realistic",
@@ -335,7 +384,7 @@ function calculateRecommendations(student, topTypes) {
       const academicReasons = [];
 
       requirements.forEach(([subject, minimum]) => {
-        const actual = student.grades[subject];
+        const actual = resolveStudentGrade(student.grades || {}, subject);
         if (!actual) {
           academicReasons.push(`${subject} was not provided`);
         } else if (meetsGrade(actual, minimum)) {
@@ -386,51 +435,72 @@ function renderGradeInputs() {
     )).join("");
   }
 
-  function renderSubjectOptions(selectedSubject = "") {
-    return electiveSubjectOptions.map((option) => (
-      `<option value="${escapeHTML(option.value)}" ${option.value === selectedSubject ? "selected" : ""}>${escapeHTML(option.label)}</option>`
-    )).join("");
+  function renderElectiveSubjectOptions(selectedSubject = "") {
+    const groups = electiveGroups.map((group) => `
+      <optgroup label="${escapeHTML(group.title)}">
+        ${group.options.map((option) => (
+          `<option value="${escapeHTML(option.value)}" ${option.value === selectedSubject ? "selected" : ""}>${escapeHTML(option.label)}</option>`
+        )).join("")}
+      </optgroup>
+    `).join("");
+    return `<option value="">${escapeHTML("SILA PILIH SUBJEK")}</option>${groups}`;
   }
 
   function getSavedElectives() {
     return Object.entries(savedGrades)
-      .filter(([subject]) => !universalSubjectRows.some((row) => row.subject === subject))
-      .slice(0, 4)
+      .filter(([subject]) => !CORE_KEYS.has(subject))
+      .slice(0, 6)
       .map(([subject, grade]) => ({ subject, grade }));
   }
 
   function renderRows() {
     const savedElectives = getSavedElectives();
+    const piGrade = savedGrades["Pendidikan Islam"];
+    const pmGrade = savedGrades["Pendidikan Moral"];
+    const agamaValue = piGrade ? "Pendidikan Islam" : pmGrade ? "Pendidikan Moral" : "";
+    const agamaGrade = piGrade || pmGrade || "";
+
     gradeGrid.innerHTML = `
-      <h3>Core subjects everyone enters</h3>
-      ${universalSubjectRows.map((row) => `
+      <h3 class="spm-section-title">1. Mata Pelajaran Teras (Wajib)</h3>
+      <p class="spm-lead">Semua calon wajib mengambil subjek ini. Pilih gred seperti yang tertera pada keputusan SPM anda.</p>
+      ${compulsorySubjects.map((row) => `
         <div class="spm-row universal-row">
           <span>${escapeHTML(row.label)}</span>
-          <select class="grade-input" data-subject="${escapeHTML(row.subject)}" aria-label="${escapeHTML(row.label)} grade">
-            ${renderGradeOptions(savedGrades[row.subject] || "")}
+          <select class="grade-input" data-subject="${escapeHTML(row.key)}" aria-label="Gred ${escapeHTML(row.label)}">
+            ${renderGradeOptions(savedGrades[row.key] || "")}
           </select>
         </div>
       `).join("")}
 
-      <h3>Best package subjects</h3>
-      ${[0, 1].map((index) => `
-        <div class="spm-row paired-row">
-          <select class="subject-input" data-elective-index="${index}" aria-label="Pakej terbaik subject ${index + 1}">
-            ${renderSubjectOptions(savedElectives[index]?.subject || "")}
-          </select>
-          <select class="grade-input" data-elective-grade="${index}" aria-label="Pakej terbaik grade ${index + 1}">
-            ${renderGradeOptions(savedElectives[index]?.grade || "")}
-          </select>
+      <div class="spm-row paired-row agama-row">
+        <div class="agama-choice" role="group" aria-labelledby="agama-legend">
+          <strong id="agama-legend" class="agama-legend">Pendidikan Islam (pelajar Muslim) / Pendidikan Moral (pelajar bukan Muslim)</strong>
+          <label class="agama-option">
+            <input type="radio" name="kmeAgamaChoice" value="Pendidikan Islam" ${agamaValue === "Pendidikan Islam" ? "checked" : ""}>
+            Pendidikan Islam
+          </label>
+          <label class="agama-option">
+            <input type="radio" name="kmeAgamaChoice" value="Pendidikan Moral" ${agamaValue === "Pendidikan Moral" ? "checked" : ""}>
+            Pendidikan Moral
+          </label>
         </div>
-      `).join("")}
+        <div>
+          <label class="agama-grade-label">Gred
+            <select class="grade-input" data-agama-grade aria-label="Gred Pendidikan Islam atau Pendidikan Moral">
+              ${renderGradeOptions(agamaGrade)}
+            </select>
+          </label>
+        </div>
+      </div>
 
-      <h3>Other strongest subjects</h3>
-      ${[2, 3].map((index) => `
+      <h3 class="spm-section-title">2. Mata Pelajaran Elektif</h3>
+      <p class="spm-lead">Pilih subjek yang anda ambil pada SPM (contoh mengikut aliran). Kosongkan baris yang tidak berkenaan.</p>
+      ${[0, 1, 2, 3, 4, 5].map((index) => `
         <div class="spm-row paired-row">
-          <select class="subject-input" data-elective-index="${index}" aria-label="Subjek terbaik lain ${index - 1}">
-            ${renderSubjectOptions(savedElectives[index]?.subject || "")}
+          <select class="subject-input" data-elective-index="${index}" aria-label="Subjek elektif ${index + 1}">
+            ${renderElectiveSubjectOptions(savedElectives[index]?.subject || "")}
           </select>
-          <select class="grade-input" data-elective-grade="${index}" aria-label="Gred subjek terbaik lain ${index - 1}">
+          <select class="grade-input" data-elective-grade="${index}" aria-label="Gred subjek elektif ${index + 1}">
             ${renderGradeOptions(savedElectives[index]?.grade || "")}
           </select>
         </div>
@@ -458,6 +528,16 @@ function renderGradeInputs() {
         selectedGrades[select.dataset.subject] = select.value;
       }
     });
+
+    const agamaRadio = gradeGrid.querySelector("input[name=\"kmeAgamaChoice\"]:checked");
+    const agamaGradeSelect = gradeGrid.querySelector("select[data-agama-grade]");
+    if (agamaRadio && agamaGradeSelect?.value && agamaGradeSelect.value !== "TIADA") {
+      if (agamaRadio.value === "Pendidikan Islam") {
+        selectedGrades["Pendidikan Islam"] = agamaGradeSelect.value;
+      } else if (agamaRadio.value === "Pendidikan Moral") {
+        selectedGrades["Pendidikan Moral"] = agamaGradeSelect.value;
+      }
+    }
 
     const electiveSubjects = [...gradeGrid.querySelectorAll("select[data-elective-index]")];
     electiveSubjects.forEach((subjectSelect) => {
@@ -512,17 +592,32 @@ function handleStudentForm() {
     const grades = form.getSelectedGrades ? form.getSelectedGrades() : {};
 
     if (form.hasDuplicateElectives?.()) {
-      showMessage(message, "Please choose each elective subject once only.");
+      showMessage(message, "Sila pilih setiap subjek elektif sekali sahaja.");
       return;
     }
 
     if (form.hasIncompleteElectives?.()) {
-      showMessage(message, "Please complete both subject and grade for each elective row.");
+      showMessage(message, "Sila lengkapkan subjek dan gred untuk setiap baris elektif yang diisi.");
       return;
     }
 
-    if (Object.keys(grades).length === 0) {
-      showMessage(message, "Please add at least one SPM subject before continuing.");
+    const missingCore = compulsorySubjects
+      .filter(({ key }) => !grades[key])
+      .map(({ label }) => label);
+    if (missingCore.length) {
+      showMessage(message, `Sila pilih gred untuk semua mata pelajaran wajib: ${missingCore.join(", ")}.`);
+      return;
+    }
+
+    const gradeGrid = document.querySelector("#spmGradeGrid");
+    const agamaRadio = gradeGrid?.querySelector("input[name=\"kmeAgamaChoice\"]:checked");
+    const agamaGradeEl = gradeGrid?.querySelector("select[data-agama-grade]");
+    if (!agamaRadio) {
+      showMessage(message, "Sila pilih Pendidikan Islam (pelajar Muslim) atau Pendidikan Moral (pelajar bukan Muslim).");
+      return;
+    }
+    if (!agamaGradeEl?.value || agamaGradeEl.value === "TIADA") {
+      showMessage(message, "Sila masukkan gred untuk Pendidikan Islam atau Pendidikan Moral.");
       return;
     }
 
