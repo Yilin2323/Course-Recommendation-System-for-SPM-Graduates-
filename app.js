@@ -656,55 +656,196 @@ function handleStudentForm() {
   });
 }
 
+function processPersonalityForm(event) {
+  if (event?.preventDefault) event.preventDefault();
+  const form = document.querySelector("#personalityForm");
+  if (!form) return;
+
+  const formData = new FormData(form);
+  const scores = { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 };
+  const answers = {};
+
+  for (let index = 0; index < questions.length; index += 1) {
+    const key = `question-${index}`;
+    const raw = formData.get(key);
+    if (raw === null || raw === "") {
+      const err = document.querySelector("#flashcardError");
+      showMessage(err, "Please answer every statement before finishing.");
+      return;
+    }
+    const value = Number(raw);
+    answers[key] = value;
+    scores[questions[index].type] += value;
+  }
+
+  const topTypes = Object.entries(scores)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([type]) => riasecLabels[type]);
+
+  saveData("kmePersonalityAnswers", answers);
+  saveData("kmePersonalityResult", { scores, topTypes });
+  window.location.href = "result.html";
+}
+
 function renderQuestions() {
   const list = document.querySelector("#questionList");
   if (!list) return;
 
   const saved = loadData("kmePersonalityAnswers", {});
+  const scaleSteps = [
+    { value: 1, label: "Strongly disagree", short: "Not me" },
+    { value: 2, label: "Disagree", short: "" },
+    { value: 3, label: "Neutral", short: "Unsure" },
+    { value: 4, label: "Agree", short: "" },
+    { value: 5, label: "Strongly agree", short: "Very me" }
+  ];
+
+  let currentIndex = 0;
+  let foundGap = false;
+  for (let i = 0; i < questions.length; i += 1) {
+    const key = `question-${i}`;
+    if (!saved[key]) {
+      currentIndex = i;
+      foundGap = true;
+      break;
+    }
+  }
+  if (!foundGap) {
+    currentIndex = questions.length - 1;
+  }
+
   list.innerHTML = questions.map((question, index) => {
     const name = `question-${index}`;
+    const isActive = index === currentIndex;
+    const optionsHtml = scaleSteps.map((step) => {
+      const sub = step.short
+        ? `<br><small>${escapeHTML(step.short)}</small>`
+        : "";
+      return `
+        <label class="flashcard-option">
+          <input type="radio" name="${name}" value="${step.value}" ${Number(saved[name]) === step.value ? "checked" : ""}>
+          <span class="flashcard-option-ring">${step.value}</span>
+          <span class="flashcard-option-text">${escapeHTML(step.label)}${sub}</span>
+        </label>
+      `;
+    }).join("");
+
     return `
-      <article class="question-card">
-        <p><span class="question-number">${index + 1}</span>${escapeHTML(question.text)}</p>
-        <div class="scale" role="radiogroup" aria-label="${escapeHTML(question.text)}">
-          ${[1, 2, 3, 4, 5].map((value) => `
-            <label>
-              <input type="radio" name="${name}" value="${value}" ${Number(saved[name]) === value ? "checked" : ""} required>
-              ${value}
-            </label>
-          `).join("")}
+      <article class="flashcard-slide${isActive ? " is-active" : ""}" data-flash-index="${index}" aria-hidden="${isActive ? "false" : "true"}">
+        <div class="flashcard-inner">
+          <p class="flashcard-type-hint">Card ${index + 1} of ${questions.length}</p>
+          <p class="flashcard-statement">${escapeHTML(question.text)}</p>
+          <div class="flashcard-scale" role="radiogroup" aria-label="Your response">
+            ${optionsHtml}
+          </div>
         </div>
       </article>
     `;
   }).join("");
+
+  const dots = document.querySelector("#flashcardDots");
+  if (dots) {
+    dots.innerHTML = questions.map((_, i) => (
+      `<button type="button" class="flashcard-dot${i === currentIndex ? " is-active" : ""}" data-go="${i}" aria-label="Go to question ${i + 1}"></button>`
+    )).join("");
+  }
+
+  const form = document.querySelector("#personalityForm");
+  const prevBtn = document.querySelector("#flashcardPrev");
+  const nextBtn = document.querySelector("#flashcardNext");
+  const counter = document.querySelector("#flashcardCounter");
+  const fill = document.querySelector("#flashcardProgressFill");
+  const err = document.querySelector("#flashcardError");
+  if (!form || !prevBtn || !nextBtn || !counter || !fill || !dots || !err) return;
+
+  const slides = () => [...list.querySelectorAll(".flashcard-slide")];
+  const dotButtons = () => [...dots.querySelectorAll(".flashcard-dot")];
+
+  function getAnswer(i) {
+    return form.querySelector(`input[name="question-${i}"]:checked`);
+  }
+
+  function updateUI() {
+    slides().forEach((el, i) => {
+      const on = i === currentIndex;
+      el.classList.toggle("is-active", on);
+      el.setAttribute("aria-hidden", on ? "false" : "true");
+    });
+    dotButtons().forEach((d, i) => {
+      d.classList.toggle("is-active", i === currentIndex);
+    });
+    counter.textContent = `${currentIndex + 1} / ${questions.length}`;
+    fill.style.width = `${((currentIndex + 1) / questions.length) * 100}%`;
+    prevBtn.disabled = currentIndex === 0;
+    const last = currentIndex === questions.length - 1;
+    nextBtn.textContent = last ? "See recommendations" : "Continue";
+    clearMessage(err);
+    const pane = slides()[currentIndex];
+    const checked = pane?.querySelector("input[type=\"radio\"]:checked");
+    const firstRadio = pane?.querySelector("input[type=\"radio\"]");
+    (checked || firstRadio)?.focus();
+  }
+
+  prevBtn.addEventListener("click", () => {
+    if (currentIndex > 0) {
+      currentIndex -= 1;
+      updateUI();
+    }
+  });
+
+  nextBtn.addEventListener("click", () => {
+    clearMessage(err);
+    if (!getAnswer(currentIndex)) {
+      showMessage(err, "Choose a response on this card to continue.");
+      return;
+    }
+    if (currentIndex < questions.length - 1) {
+      currentIndex += 1;
+      updateUI();
+      return;
+    }
+    for (let i = 0; i < questions.length; i += 1) {
+      if (!getAnswer(i)) {
+        showMessage(err, "Please answer every card before finishing.");
+        currentIndex = i;
+        updateUI();
+        return;
+      }
+    }
+    form.requestSubmit();
+  });
+
+  dotButtons().forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const go = Number(btn.dataset.go);
+      if (!Number.isNaN(go) && go >= 0 && go < questions.length) {
+        currentIndex = go;
+        clearMessage(err);
+        updateUI();
+      }
+    });
+  });
+
+  form.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowLeft" && currentIndex > 0) {
+      currentIndex -= 1;
+      updateUI();
+    }
+    if (e.key === "ArrowRight" && getAnswer(currentIndex) && currentIndex < questions.length - 1) {
+      currentIndex += 1;
+      updateUI();
+    }
+  });
+
+  updateUI();
 }
 
 function handlePersonalityForm() {
   const form = document.querySelector("#personalityForm");
   if (!form) return;
 
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const formData = new FormData(form);
-    const scores = { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 };
-    const answers = {};
-
-    questions.forEach((question, index) => {
-      const key = `question-${index}`;
-      const value = Number(formData.get(key));
-      answers[key] = value;
-      scores[question.type] += value;
-    });
-
-    const topTypes = Object.entries(scores)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 3)
-      .map(([type]) => riasecLabels[type]);
-
-    saveData("kmePersonalityAnswers", answers);
-    saveData("kmePersonalityResult", { scores, topTypes });
-    window.location.href = "result.html";
-  });
+  form.addEventListener("submit", processPersonalityForm);
 }
 
 function renderResults() {

@@ -23,8 +23,8 @@
   <main class="page">
     <section class="page-heading">
       <p class="eyebrow">Step 2 of 3</p>
-      <h1>Find your learning and career vibe.</h1>
-      <p>Rate each statement honestly. Your top three RIASEC types will help shape the recommendation ranking.</p>
+      <h1>RIASEC flashcards.</h1>
+      <p>One statement at a time — like a short MBTI-style check-in. Tap how much each line sounds like you, then continue.</p>
       <div class="stepper" aria-label="Recommendation progress">
         <span>1 Profile</span>
         <span class="active">2 Personality</span>
@@ -32,25 +32,30 @@
       </div>
     </section>
 
-    <form id="personalityForm" class="form-shell">
-      <section class="scale-guide" aria-label="Rating guide">
-        <div>
-          <strong>1 means not me</strong>
-          <p>Choose low scores for activities you rarely enjoy.</p>
+    <form id="personalityForm" class="form-shell flashcard-form">
+      <div class="flashcard-root" id="flashcardRoot">
+        <div class="flashcard-top">
+          <span id="flashcardCounter" class="flashcard-counter" aria-live="polite">1 / 10</span>
+          <div class="flashcard-progress-track" aria-hidden="true">
+            <span id="flashcardProgressFill" class="flashcard-progress-fill"></span>
+          </div>
         </div>
-        <div>
-          <strong>3 means maybe</strong>
-          <p>Use the middle when the statement depends on the situation.</p>
+
+        <div id="flashcardViewport" class="flashcard-viewport">
+          <div id="questionList" class="flashcard-stack"></div>
         </div>
-        <div>
-          <strong>5 means very me</strong>
-          <p>Choose high scores for activities that sound exciting or natural.</p>
+
+        <p id="flashcardError" class="form-message flashcard-error" role="alert"></p>
+
+        <div class="flashcard-nav">
+          <button type="button" id="flashcardPrev" class="button ghost">Previous</button>
+          <div id="flashcardDots" class="flashcard-dots" aria-label="Question dots"></div>
+          <button type="button" id="flashcardNext" class="button primary">Continue</button>
         </div>
-      </section>
-      <div id="questionList" class="question-list"></div>
+      </div>
+
       <div class="form-actions">
-        <a class="button ghost" href="input.html">Back to Profile</a>
-        <button class="button primary" type="submit">See Recommendation</button>
+        <a class="button ghost" href="input.html">Exit to profile</a>
       </div>
     </form>
   </main>
