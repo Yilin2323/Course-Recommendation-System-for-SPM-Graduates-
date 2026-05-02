@@ -37,11 +37,11 @@
       <section class="info-strip" aria-label="SPM structure tips">
         <div>
           <strong>Mata pelajaran teras (wajib)</strong>
-          <p>Bahasa Melayu, Bahasa Inggeris (CEFR), Sejarah, Matematik, Sains (mengikut aliran), dan Pendidikan Islam atau Pendidikan Moral.</p>
+          <p>Bahasa Melayu, Bahasa Inggeris (CEFR), Sejarah, Matematik, dan Pendidikan Islam atau Pendidikan Moral.</p>
         </div>
         <div>
           <strong>Mata pelajaran elektif</strong>
-          <p>Pilih subjek SPM yang anda ambil daripada senarai contoh mengikut aliran (Sains Tulen, Sastera &amp; Kemanusiaan, Teknikal &amp; Vokasional, Bahasa Tambahan).</p>
+          <p>Pilih subjek SPM yang anda ambil (Sains Tulen, Sastera &amp; Kemanusiaan termasuk Sains untuk aliran berkenaan, Teknikal &amp; Vokasional, Bahasa Tambahan).</p>
         </div>
       </section>
 
@@ -76,9 +76,13 @@
         <div id="spmGradeGrid" class="spm-grade-grid"></div>
       </section>
 
-      <div class="form-actions">
+      <div class="form-actions form-actions--split">
         <a class="button ghost" href="index.html">Back Home</a>
-        <button class="button primary" type="submit">Save and Continue</button>
+        <div class="form-actions-group" role="group" aria-label="Form actions">
+          <button type="button" id="studentClear" class="button ghost">Clear</button>
+          <button type="button" id="studentSave" class="button secondary">Save</button>
+          <button type="button" id="studentStartTest" class="button primary">Start Test</button>
+        </div>
       </div>
     </form>
   </main>

@@ -1036,8 +1036,7 @@ nav a.active {
 
 .preview-card,
 .info-strip,
-.scale-guide,
-.result-layout {
+.scale-guide {
   max-width: 980px;
   margin: 0 auto 20px;
 }
@@ -1151,6 +1150,24 @@ nav a.active {
 
 .form-message.show {
   display: block;
+}
+
+.form-message.success {
+  color: #166534;
+  background: #ecfdf3;
+  border-color: #86efac;
+}
+
+.form-actions.form-actions--split {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.form-actions-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
 }
 
 input,
@@ -1532,18 +1549,288 @@ select:focus {
   }
 }
 
-.summary {
-  border-radius: 28px;
+.course-list--results {
+  display: block;
+  max-width: 1120px;
+  margin: 0 auto 32px;
 }
 
-.result-layout {
+.kb-results-lead {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto 8px;
+}
+
+.kb-engine-pill {
+  display: inline-flex;
+  padding: 8px 14px;
+  margin-bottom: 10px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #0f766e;
+  background: linear-gradient(135deg, #ccfbf1, #e0f2fe);
+  border: 1px solid rgba(45, 212, 191, 0.45);
+  border-radius: 999px;
+}
+
+.kb-engine-copy {
+  margin: 0;
+  color: var(--ink-soft, #4d587c);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.55;
+}
+
+.kb-card-grid {
   display: grid;
-  grid-template-columns: 0.8fr 1.2fr;
-  gap: 20px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  margin-top: 22px;
 }
 
-.course-list {
-  max-width: none;
+.kb-course-card {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-radius: 22px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  box-shadow:
+    0 4px 6px rgba(15, 23, 42, 0.04),
+    0 22px 48px rgba(15, 118, 110, 0.08);
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.kb-course-card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 8px 12px rgba(15, 23, 42, 0.06),
+    0 28px 56px rgba(13, 148, 136, 0.12);
+}
+
+.kb-course-card--best {
+  border-color: rgba(13, 148, 136, 0.55);
+  box-shadow:
+    0 4px 6px rgba(15, 23, 42, 0.04),
+    0 24px 52px rgba(13, 148, 136, 0.18);
+}
+
+.kb-card-media {
+  position: relative;
+  height: 148px;
+  overflow: hidden;
+  background: #0f172a;
+}
+
+.kb-card-img {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transform: scale(1.02);
+}
+
+.kb-card-media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.62), transparent 52%, rgba(15, 23, 42, 0.15));
+  pointer-events: none;
+}
+
+.kb-rank-chip {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 2;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 900;
+  color: white;
+  background: rgba(15, 23, 42, 0.45);
+  border-radius: 10px;
+  backdrop-filter: blur(8px);
+}
+
+.kb-course-card--best .kb-card-media::before {
+  content: "Best match";
+  position: absolute;
+  bottom: 10px;
+  left: 12px;
+  z-index: 2;
+  padding: 6px 10px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: white;
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 8px;
+  backdrop-filter: blur(6px);
+}
+
+.kb-match-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 900;
+  color: #042f2e;
+  background: linear-gradient(135deg, #5eead4, #99f6e4);
+  border-radius: 999px;
+  box-shadow: 0 6px 16px rgba(15, 118, 110, 0.35);
+}
+
+.kb-card-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 12px;
+  padding: 18px 18px 20px;
+}
+
+.kb-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.kb-card-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 900;
+  line-height: 1.25;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.kb-save-btn {
+  flex-shrink: 0;
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  color: #64748b;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.kb-save-btn:hover {
+  color: #0f766e;
+  border-color: #99f6e4;
+  background: #ecfdf5;
+}
+
+.kb-save-btn.is-saved {
+  color: #0f766e;
+  background: #ccfbf1;
+  border-color: #5eead4;
+}
+
+.kb-bookmark-icon {
+  display: block;
+}
+
+.kb-card-desc {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #475569;
+  flex: 1;
+}
+
+.kb-meta {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.kb-meta li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kb-meta-icon {
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+.kb-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.kb-tag {
+  display: inline-flex;
+  padding: 5px 9px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #475569;
+  background: #f1f5f9;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.kb-details {
+  margin-top: 4px;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 10px;
+}
+
+.kb-details summary {
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #0d9488;
+}
+
+.kb-details-text {
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+@media (max-width: 960px) {
+  .kb-card-grid {
+    grid-template-columns: 1fr;
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+.result-intro-meta {
+  display: block;
+  margin-top: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink-soft, #4d587c);
 }
 
 .course-card {
@@ -1626,8 +1913,7 @@ select:focus {
   .hero,
   .preview-card,
   .info-strip,
-  .scale-guide,
-  .result-layout {
+  .scale-guide {
     grid-template-columns: 1fr;
   }
 }
@@ -1640,6 +1926,15 @@ select:focus {
 
   .form-actions {
     justify-content: stretch;
+  }
+
+  .form-actions--split {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-actions--split .form-actions-group {
+    width: 100%;
   }
 
   .button {

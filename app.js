@@ -30,8 +30,7 @@ const compulsorySubjects = [
   { label: "Bahasa Melayu", key: "Bahasa Melayu" },
   { label: "Bahasa Inggeris (dijajarkan dengan CEFR)", key: "English" },
   { label: "Sejarah", key: "History" },
-  { label: "Matematik", key: "Mathematics" },
-  { label: "Sains (wajib bagi aliran Sastera, Perdagangan & Kesenian)", key: "Science" }
+  { label: "Matematik", key: "Mathematics" }
 ];
 
 const CORE_KEYS = new Set([
@@ -54,6 +53,7 @@ const electiveGroups = [
   {
     title: "Aliran Sastera & Kemanusiaan",
     options: [
+      { label: "Sains (wajib bagi aliran Sastera, Perdagangan & Kesenian)", value: "Science" },
       { label: "Ekonomi", value: "Ekonomi" },
       { label: "Perniagaan", value: "Perniagaan" },
       { label: "Prinsip Perakaunan", value: "Prinsip Perakaunan" },
@@ -218,13 +218,20 @@ function escapeHTML(value) {
 function showMessage(element, message) {
   if (!element) return;
   element.textContent = message;
+  element.classList.remove("success");
   element.classList.add("show");
+}
+
+function showSuccessMessage(element, message) {
+  if (!element) return;
+  element.textContent = message;
+  element.classList.add("show", "success");
 }
 
 function clearMessage(element) {
   if (!element) return;
   element.textContent = "";
-  element.classList.remove("show");
+  element.classList.remove("show", "success");
 }
 
 const AUTH_USERS_KEY = "kmeUsers";
@@ -519,7 +526,7 @@ function renderGradeInputs() {
       </div>
 
       <h3 class="spm-section-title">2. Mata Pelajaran Elektif</h3>
-      <p class="spm-lead">Pilih subjek yang anda ambil pada SPM (contoh mengikut aliran). Kosongkan baris yang tidak berkenaan.</p>
+      <p class="spm-lead">Pilih subjek yang anda ambil pada SPM (contoh mengikut aliran). Sains untuk aliran Sastera, Perdagangan &amp; Kesenian pilih dalam kumpulan &ldquo;Aliran Sastera &amp; Kemanusiaan&rdquo;. Kosongkan baris yang tidak berkenaan.</p>
       ${[0, 1, 2, 3, 4, 5].map((index) => `
         <div class="spm-row paired-row">
           <select class="subject-input" data-elective-index="${index}" aria-label="Subjek elektif ${index + 1}">
@@ -605,53 +612,87 @@ function renderGradeInputs() {
   renderRows();
 }
 
+function validateStudentPayload(form, messageEl) {
+  clearMessage(messageEl);
+  if (typeof form.reportValidity === "function" && !form.reportValidity()) {
+    return null;
+  }
+  const formData = new FormData(form);
+  const grades = form.getSelectedGrades ? form.getSelectedGrades() : {};
+
+  if (form.hasDuplicateElectives?.()) {
+    showMessage(messageEl, "Sila pilih setiap subjek elektif sekali sahaja.");
+    return null;
+  }
+
+  if (form.hasIncompleteElectives?.()) {
+    showMessage(messageEl, "Sila lengkapkan subjek dan gred untuk setiap baris elektif yang diisi.");
+    return null;
+  }
+
+  const missingCore = compulsorySubjects
+    .filter(({ key }) => !grades[key])
+    .map(({ label }) => label);
+  if (missingCore.length) {
+    showMessage(messageEl, `Sila pilih gred untuk semua mata pelajaran wajib: ${missingCore.join(", ")}.`);
+    return null;
+  }
+
+  const gradeGrid = document.querySelector("#spmGradeGrid");
+  const agamaRadio = gradeGrid?.querySelector("input[name=\"kmeAgamaChoice\"]:checked");
+  const agamaGradeEl = gradeGrid?.querySelector("select[data-agama-grade]");
+  if (!agamaRadio) {
+    showMessage(messageEl, "Sila pilih Pendidikan Islam (pelajar Muslim) atau Pendidikan Moral (pelajar bukan Muslim).");
+    return null;
+  }
+  if (!agamaGradeEl?.value || agamaGradeEl.value === "TIADA") {
+    showMessage(messageEl, "Sila masukkan gred untuk Pendidikan Islam atau Pendidikan Moral.");
+    return null;
+  }
+
+  const name = String(formData.get("name") || "").trim();
+  const email = String(formData.get("email") || "").trim();
+  if (!name || !email) {
+    showMessage(messageEl, "Sila isi nama dan e-mel.");
+    return null;
+  }
+
+  return {
+    name: formData.get("name"),
+    email: formData.get("email"),
+    grades
+  };
+}
+
 function handleStudentForm() {
   const form = document.querySelector("#studentForm");
   if (!form) return;
   const message = document.querySelector("#studentMessage");
+  const clearBtn = document.querySelector("#studentClear");
+  const saveBtn = document.querySelector("#studentSave");
+  const startBtn = document.querySelector("#studentStartTest");
 
   form.addEventListener("submit", (event) => {
     event.preventDefault();
+  });
+
+  clearBtn?.addEventListener("click", () => {
     clearMessage(message);
-    const formData = new FormData(form);
-    const grades = form.getSelectedGrades ? form.getSelectedGrades() : {};
+    localStorage.removeItem("kmeStudent");
+    renderGradeInputs();
+  });
 
-    if (form.hasDuplicateElectives?.()) {
-      showMessage(message, "Sila pilih setiap subjek elektif sekali sahaja.");
-      return;
-    }
+  saveBtn?.addEventListener("click", () => {
+    const payload = validateStudentPayload(form, message);
+    if (!payload) return;
+    saveData("kmeStudent", payload);
+    showSuccessMessage(message, "Saved. Your profile is stored in this browser. Use Start Test when you are ready for the personality cards.");
+  });
 
-    if (form.hasIncompleteElectives?.()) {
-      showMessage(message, "Sila lengkapkan subjek dan gred untuk setiap baris elektif yang diisi.");
-      return;
-    }
-
-    const missingCore = compulsorySubjects
-      .filter(({ key }) => !grades[key])
-      .map(({ label }) => label);
-    if (missingCore.length) {
-      showMessage(message, `Sila pilih gred untuk semua mata pelajaran wajib: ${missingCore.join(", ")}.`);
-      return;
-    }
-
-    const gradeGrid = document.querySelector("#spmGradeGrid");
-    const agamaRadio = gradeGrid?.querySelector("input[name=\"kmeAgamaChoice\"]:checked");
-    const agamaGradeEl = gradeGrid?.querySelector("select[data-agama-grade]");
-    if (!agamaRadio) {
-      showMessage(message, "Sila pilih Pendidikan Islam (pelajar Muslim) atau Pendidikan Moral (pelajar bukan Muslim).");
-      return;
-    }
-    if (!agamaGradeEl?.value || agamaGradeEl.value === "TIADA") {
-      showMessage(message, "Sila masukkan gred untuk Pendidikan Islam atau Pendidikan Moral.");
-      return;
-    }
-
-    saveData("kmeStudent", {
-      name: formData.get("name"),
-      email: formData.get("email"),
-      grades
-    });
-
+  startBtn?.addEventListener("click", () => {
+    const payload = validateStudentPayload(form, message);
+    if (!payload) return;
+    saveData("kmeStudent", payload);
     window.location.href = "personality.html";
   });
 }
@@ -848,55 +889,118 @@ function handlePersonalityForm() {
   form.addEventListener("submit", processPersonalityForm);
 }
 
+const KB_BOOKMARK_ICON = `<svg class="kb-bookmark-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M6 3h12a2 2 0 012 2v16.5a.5.5 0 01-.78.41L12 17.35l-7.22 5.56A.5.5 0 014 20.5V5a2 2 0 012-2z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>`;
+
+function fieldToKbMediaClass(field) {
+  const f = String(field).toLowerCase();
+  if (f.includes("comput")) return "computing";
+  if (f.includes("business")) return "business";
+  if (f.includes("engineer")) return "engineering";
+  if (f.includes("creative") || f.includes("media")) return "creative";
+  if (f.includes("education")) return "education";
+  if (f.includes("science")) return "science";
+  return "default";
+}
+
+function kbRationaleSnippet(course) {
+  const chunks = course.reason.split(". ").filter(Boolean).slice(0, 3);
+  return chunks.map((c) => c.replace(/\.$/, "")).join(". ").trim();
+}
+
+function toggleSavedCourseName(name) {
+  const arr = loadData("kmeSavedCourses", []);
+  const index = arr.indexOf(name);
+  if (index >= 0) arr.splice(index, 1);
+  else arr.push(name);
+  saveData("kmeSavedCourses", arr);
+}
+
 function renderResults() {
-  const summary = document.querySelector("#profileSummary");
   const list = document.querySelector("#recommendationList");
   const intro = document.querySelector("#resultIntro");
-  if (!summary || !list) return;
+  if (!list || !intro) return;
 
   const student = loadData("kmeStudent", null);
   const personality = loadData("kmePersonalityResult", null);
 
   if (!student || !personality) {
-    summary.innerHTML = `
+    intro.textContent = "Complete your student profile and personality test to see ranked course matches.";
+    list.innerHTML = `
       <div class="empty-state">
         <strong>No profile found yet.</strong>
         <p>Please complete the student input page and personality test first.</p>
       </div>
     `;
-    list.innerHTML = "";
     return;
   }
 
   const recommendations = calculateRecommendations(student, personality.topTypes);
-  intro.textContent = `Here are the ranked recommendations for ${student.name}.`;
-  summary.innerHTML = `
-    <span class="mini-chip">Student snapshot</span>
-    <strong>${escapeHTML(student.name)}</strong>
-    <p>${escapeHTML(student.email)}</p>
-    <p>${Object.keys(student.grades || {}).length} SPM subjects included in this match.</p>
-    <div class="pills">
-      ${personality.topTypes.map((type) => `<span class="pill">${escapeHTML(type)}</span>`).join("")}
+  const topThree = recommendations.slice(0, 3);
+  const subjectCount = Object.keys(student.grades || {}).length;
+  const traits = personality.topTypes.map((t) => escapeHTML(t)).join(", ");
+  const savedNames = loadData("kmeSavedCourses", []);
+
+  intro.innerHTML = `
+    Knowledge-based results for <strong>${escapeHTML(student.name)}</strong>
+    <span class="result-intro-meta">${escapeHTML(student.email)} · Top RIASEC: ${traits} · ${subjectCount} SPM subjects · Top 3 matches</span>
+  `;
+
+  list.innerHTML = `
+    <div class="kb-results-lead">
+      <span class="kb-engine-pill">Knowledge-based system</span>
+      <p class="kb-engine-copy">Rankings combine <strong>SPM entry rules</strong> with your <strong>RIASEC</strong> profile. Only the three strongest overall fits are shown.</p>
+    </div>
+    <div class="kb-card-grid">
+      ${topThree.map((course, index) => {
+    const mediaClass = fieldToKbMediaClass(course.field);
+    const saved = savedNames.includes(course.name);
+    const tags = [
+      ...course.personalityTypes.map((t) => escapeHTML(String(t).toUpperCase().replace(/\s+/g, " "))),
+      escapeHTML(String(course.field).toUpperCase()),
+      escapeHTML(String(course.level.text).toUpperCase().replace(/\s+/g, " "))
+    ].map((tag) => `<span class="kb-tag">${tag}</span>`).join("");
+    const snippet = escapeHTML(kbRationaleSnippet(course));
+    return `
+      <article class="kb-course-card${index === 0 ? " kb-course-card--best" : ""}" data-rank="${index + 1}">
+        <div class="kb-card-media kb-card-media--${mediaClass}">
+          <img class="kb-card-img" src="assets/kb/${mediaClass}.svg" alt="" width="400" height="240" loading="lazy" decoding="async">
+          <span class="kb-rank-chip" aria-hidden="true">#${index + 1}</span>
+          <span class="kb-match-badge">${course.score}% match</span>
+        </div>
+        <div class="kb-card-body">
+          <div class="kb-card-head">
+            <h2 class="kb-card-title">${escapeHTML(course.name)}</h2>
+            <button type="button" class="kb-save-btn${saved ? " is-saved" : ""}" aria-label="Save course" aria-pressed="${saved ? "true" : "false"}">
+              ${KB_BOOKMARK_ICON}
+            </button>
+          </div>
+          <p class="kb-card-desc">${escapeHTML(course.explanation)}</p>
+          <ul class="kb-meta">
+            <li><span class="kb-meta-icon" aria-hidden="true">⏱</span> Pathway: SPM → diploma / foundation</li>
+            <li><span class="kb-meta-icon" aria-hidden="true">◎</span> Domain: ${escapeHTML(course.field)}</li>
+          </ul>
+          <div class="kb-tags" aria-label="Match keywords">${tags}</div>
+          <details class="kb-details">
+            <summary>Why this programme ranked here</summary>
+            <p class="kb-details-text">${snippet}</p>
+          </details>
+        </div>
+      </article>
+    `;
+  }).join("")}
     </div>
   `;
 
-  list.innerHTML = recommendations.map((course, index) => `
-    <article class="course-card ${index === 0 ? "top-match" : ""}">
-      <div class="course-top">
-        <div>
-          <h2>${escapeHTML(course.name)}</h2>
-          <span class="pill">${escapeHTML(course.field)}</span>
-        </div>
-        <div class="score">
-          <strong>${course.score}%</strong>
-          <span class="level ${course.level.className}">${escapeHTML(course.level.text)}</span>
-        </div>
-      </div>
-      <div class="reason-list">
-        ${course.reason.split(". ").filter(Boolean).map((reason) => `<span>${escapeHTML(reason.replace(/\.$/, ""))}</span>`).join("")}
-      </div>
-    </article>
-  `).join("");
+  list.querySelectorAll(".kb-save-btn").forEach((btn, idx) => {
+    const course = topThree[idx];
+    if (!course) return;
+    btn.addEventListener("click", () => {
+      toggleSavedCourseName(course.name);
+      const on = loadData("kmeSavedCourses", []).includes(course.name);
+      btn.classList.toggle("is-saved", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  });
 }
 
 if (!requireAuthForApp()) {
