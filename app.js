@@ -251,8 +251,22 @@ function clearSession() {
 }
 
 function getPageFile() {
-  const parts = window.location.pathname.split("/");
-  return (parts.pop() || "index.html").toLowerCase();
+  let name = window.location.pathname.split("/").pop() || "";
+  name = name.split("?")[0].split("#")[0] || "";
+  if (!name) return "index.html";
+  return name.toLowerCase();
+}
+
+const PUBLIC_PAGES = new Set(["landing.html", "login.html", "register.html"]);
+
+function requireAuthForApp() {
+  const file = getPageFile();
+  if (PUBLIC_PAGES.has(file)) return false;
+  if (!getSession()) {
+    window.location.replace("landing.html");
+    return true;
+  }
+  return false;
 }
 
 function renderNavAuth() {
@@ -261,15 +275,18 @@ function renderNavAuth() {
 
   const session = getSession();
   const file = getPageFile();
+  const publicAuthPages = new Set(["landing.html", "login.html", "register.html"]);
+  const showEnterApp = session && publicAuthPages.has(file);
 
   if (session && session.name && session.email) {
     el.innerHTML = `
+      ${showEnterApp ? `<a class="button primary" href="index.html">Enter app</a>` : ""}
       <span class="user-greeting" title="${escapeHTML(session.email)}">${escapeHTML(session.name)}</span>
       <button type="button" class="nav-auth-out button ghost">Log out</button>
     `;
     el.querySelector(".nav-auth-out")?.addEventListener("click", () => {
       clearSession();
-      window.location.href = "index.html";
+      window.location.href = "landing.html";
     });
     return;
   }
@@ -281,6 +298,14 @@ function renderNavAuth() {
 
   if (file === "register.html") {
     el.innerHTML = `<a class="nav-auth-link" href="login.html">Log in</a>`;
+    return;
+  }
+
+  if (file === "landing.html") {
+    el.innerHTML = `
+      <a class="nav-auth-link" href="login.html">Log in</a>
+      <a class="button secondary" href="register.html">Sign up</a>
+    `;
     return;
   }
 
@@ -357,7 +382,7 @@ function handleRegisterForm() {
     users.push({ name, email, password });
     saveUsers(users);
     setSession({ email, name });
-    window.location.href = "input.html";
+    window.location.href = "index.html";
   });
 }
 
@@ -733,11 +758,13 @@ function renderResults() {
   `).join("");
 }
 
-renderNavAuth();
-handleLoginForm();
-handleRegisterForm();
-renderGradeInputs();
-handleStudentForm();
-renderQuestions();
-handlePersonalityForm();
-renderResults();
+if (!requireAuthForApp()) {
+  renderNavAuth();
+  handleLoginForm();
+  handleRegisterForm();
+  renderGradeInputs();
+  handleStudentForm();
+  renderQuestions();
+  handlePersonalityForm();
+  renderResults();
+}

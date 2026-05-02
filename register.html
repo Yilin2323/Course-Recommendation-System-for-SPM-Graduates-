@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register | KME Recommender</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-100 text-slate-800">
+  <header class="topbar">
+    <a class="brand" href="landing.html"><span>KME Recommender<small>SPM course ideas</small></span></a>
+    <div class="topbar-actions topbar-actions--public">
+      <div class="nav-auth" id="navAuth" aria-label="Account"></div>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="page-heading">
+      <p class="eyebrow">Account</p>
+      <h1>Create your account.</h1>
+      <p>After you register you will be taken to the app home. Data stays in localStorage on this device.</p>
+    </section>
+
+    <form id="registerForm" class="form-shell auth-form" autocomplete="on">
+      <div id="registerMessage" class="form-message" role="alert"></div>
+      <section class="form-section">
+        <div class="form-section-header">
+          <div>
+            <h2>Sign up</h2>
+            <p class="section-note">Use at least 6 characters for your password.</p>
+          </div>
+        </div>
+        <div class="grid two">
+          <label class="grid-span-2">
+            Full name
+            <input id="registerName" name="name" type="text" placeholder="Your name" required autocomplete="name">
+          </label>
+          <label class="grid-span-2">
+            Email
+            <input name="email" type="email" placeholder="you@example.com" required autocomplete="email">
+          </label>
+          <label>
+            Password
+            <input name="password" type="password" placeholder="At least 6 characters" required minlength="6" autocomplete="new-password">
+          </label>
+          <label>
+            Confirm password
+            <input name="confirmPassword" type="password" placeholder="Repeat password" required minlength="6" autocomplete="new-password">
+          </label>
+        </div>
+      </section>
+      <div class="form-actions">
+        <a class="button ghost" href="landing.html">Back to landing</a>
+        <button class="button primary" type="submit">Create account</button>
+      </div>
+      <p class="auth-switch">Already have an account? <a href="login.html">Log in</a></p>
+    </form>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

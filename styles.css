@@ -726,6 +726,23 @@ body::before {
   min-width: 0;
 }
 
+.topbar-actions--public {
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.landing-hero {
+  min-height: auto;
+  padding-bottom: 48px;
+}
+
+.landing-note {
+  margin-top: 18px;
+  color: var(--ink-soft, #4d587c);
+  font-size: 14px;
+  font-weight: 600;
+}
+
 .nav-auth {
   display: flex;
   flex-wrap: wrap;
